@@ -1,0 +1,33 @@
+{
+  "name": "among-us-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix --ext .js,.jsx ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dinhero21/among-us-editor.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dinhero21/among-us-editor/issues"
+  },
+  "homepage": "https://github.com/Dinhero21/among-us-editor#readme",
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "figlet": "^1.5.2",
+    "inquire": "^0.4.8",
+    "inquirer": "^8.2.2"
+  }
+}
