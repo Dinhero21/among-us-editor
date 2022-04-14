@@ -139,11 +139,16 @@ async function cli () {
       }
     })
 
-    gameHostOptions[option] = value
+    gameHostOptions.RECOMMENDED_SETTINGS = 0
 
+    gameHostOptions[option] = value
     gameHostOptionsBuffer = sus.gameHostOptions.encode(gameHostOptions)
 
     sus.gameHostOptions.writeBuffer(gameHostOptionsPath, gameHostOptionsBuffer)
+
+    gameHostOptionsBuffer = sus.gameHostOptions.getBuffer(gameHostOptionsPath)
+    gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+    parsed = sus.gameHostOptions.format(gameHostOptions)
   }
 
   async function save () {
