@@ -24,40 +24,34 @@ function none (value) {
 }
 
 const gameHostOptions = {
-  getGameHostOptionsPath (amongUsPath) {
+  getPath (amongUsPath) {
     return path.join(amongUsPath, 'gameHostOptions')
   },
-  getBuffer (amongUsPath) {
-    const gameHostOptionsPath = gameHostOptions.getGameHostOptionsPath(amongUsPath)
-
+  getBuffer (gameHostOptionsPath) {
     if (fs.existsSync(gameHostOptionsPath)) console.info(`Found game host options in "${gameHostOptionsPath}".`)
     else throw new Error(`Could not find game host options in "${gameHostOptionsPath}".`)
 
     return fs.readFileSync(gameHostOptionsPath)
   },
-  writeBuffer (amongUsPath, gameHostOptionsBuffer) {
-    const gameHostOptionsPath = gameHostOptions.getGameHostOptionsPath(amongUsPath)
-
+  writeBuffer (gameHostOptionsPath, gameHostOptionsBuffer) {
     return fs.writeFileSync(gameHostOptionsPath, gameHostOptionsBuffer)
   },
-  parse (gameHostOptionsBuffer) {
+  parse (buffer) {
     return Object.fromEntries(Object.entries(gameHostOptions.table).map(([key, value]) => {
-      console.log(value)
-
       let data
 
       switch (value.type) {
         case 'Int8':
-          data = gameHostOptionsBuffer.readInt8(value.address)
+          data = buffer.readInt8(value.address)
           break
         case 'UInt8':
-          data = gameHostOptionsBuffer.readUInt8(value.address)
+          data = buffer.readUInt8(value.address)
           break
         case 'Int32LE':
-          data = gameHostOptionsBuffer.readInt32LE(value.address)
+          data = buffer.readInt32LE(value.address)
           break
         case 'FloatLE':
-          data = gameHostOptionsBuffer.readFloatLE(value.address)
+          data = buffer.readFloatLE(value.address)
           break
         default:
           throw new Error(`Unknown type: ${value.type}`)
@@ -89,10 +83,10 @@ const gameHostOptions = {
     }
     */
   },
-  encode (gameHostOptionsObject) {
+  encode (object) {
     const buffer = Buffer.alloc(60)
 
-    for (const [option, value] of Object.entries(gameHostOptionsObject)) {
+    for (const [option, value] of Object.entries(object)) {
       const properties = gameHostOptions.table[option]
 
       switch (properties.type) {
@@ -238,10 +232,12 @@ const gameHostOptions = {
       return `${table.name}: ${table.parse(value)}`
     }
 
-    console.log(gameHostOptionsParsed)
-
     return Object.fromEntries(Object.entries(gameHostOptionsParsed).map(([key, value]) => [key, format(key, value)]))
   }
 }
 
-module.exports = { gameHostOptions }
+function getAmongUsPath (user) {
+  return path.join(user, 'Appdata/LocalLow/Innersloth/Among Us')
+}
+
+module.exports = { gameHostOptions, getAmongUsPath }

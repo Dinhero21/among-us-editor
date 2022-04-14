@@ -1,19 +1,25 @@
 const sus = require('./sus.js')
 const path = require('path')
 const util = require('util')
+const fs = require('fs')
 const figlet = require('figlet')
 const inquirer = require('inquirer')
 // const fs = require('fs')
 
-const amongUsPath = path.join(process.env.USERPROFILE, 'Appdata/LocalLow/Innersloth/Among Us')
+const amongUsPath = sus.getAmongUsPath(process.env.USERPROFILE)
+const gameHostOptionsPath = sus.gameHostOptions.getPath(amongUsPath)
+
+let gameHostOptionsBuffer = sus.gameHostOptions.getBuffer(gameHostOptionsPath)
+let gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+let parsed = sus.gameHostOptions.format(gameHostOptions)
 
 cli()
 
 async function cli () {
-  await menu() // while (true) await menu()
+  while (true) await menu()
 
   async function menu () {
-    // console.clear()
+    console.clear()
 
     await title()
 
@@ -23,12 +29,20 @@ async function cli () {
       message: 'What would you like to do?',
       choices: [
         {
-          name: 'Edit',
+          name: 'Edit game host options',
           value: 'edit'
         },
         {
-          name: 'Quit',
-          value: 'quit'
+          name: 'Save to file',
+          value: 'save'
+        },
+        {
+          name: 'Load file',
+          value: 'load'
+        },
+        {
+          name: 'Exit',
+          value: 'exit'
         }
       ]
     })
@@ -37,7 +51,13 @@ async function cli () {
       case 'edit':
         await edit()
         break
-      case 'quit':
+      case 'save':
+        await save()
+        break
+      case 'load':
+        await load()
+        break
+      case 'exit':
         process.exit(0)
         // break
       default:
@@ -47,15 +67,9 @@ async function cli () {
   }
 
   async function edit () {
-    let gameHostOptionsBuffer = sus.gameHostOptions.getBuffer(amongUsPath)
-    const gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
-    const parsed = sus.gameHostOptions.format(gameHostOptions)
-
     console.clear()
 
     await title()
-
-    console.log(gameHostOptions)
 
     const { option } = await inquirer.prompt({
       type: 'list',
@@ -129,7 +143,60 @@ async function cli () {
 
     gameHostOptionsBuffer = sus.gameHostOptions.encode(gameHostOptions)
 
-    sus.gameHostOptions.writeBuffer(amongUsPath, gameHostOptionsBuffer)
+    sus.gameHostOptions.writeBuffer(gameHostOptionsPath, gameHostOptionsBuffer)
+  }
+
+  async function save () {
+    const { name } = await inquirer.prompt({
+      type: 'input',
+      name: 'name',
+      message: 'Save name:'
+    })
+
+    const savePath = path.join('./saves', name)
+
+    if (fs.existsSync(savePath)) {
+      const { overwrite } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'overwrite',
+        message: `${name} already exists. Do you want to overwrite it?`
+      })
+
+      if (!overwrite) await save()
+
+      if (!save) return await save()
+    }
+
+    fs.writeFileSync(savePath, gameHostOptionsBuffer)
+  }
+
+  async function load () {
+    if (!fs.existsSync('./saves')) fs.mkdirSync('./saves')
+
+    const saves = fs.readdirSync('./saves')
+
+    if (saves.length === 0) return
+
+    const { name } = await inquirer.prompt({
+      type: 'list',
+      name: 'name',
+      message: 'Load file:',
+      choices: saves
+    })
+
+    const savePath = path.join('./saves', name)
+
+    const { saveCurrent } = await inquirer.prompt({
+      type: 'confirm',
+      name: 'saveCurrent',
+      message: 'Would you like to save the current game host options?'
+    })
+
+    if (saveCurrent) await save()
+
+    gameHostOptionsBuffer = fs.readFileSync(savePath)
+    gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+    parsed = sus.gameHostOptions.format(gameHostOptions)
   }
 
   async function title () {
