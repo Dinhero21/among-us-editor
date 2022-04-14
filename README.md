@@ -7,3 +7,5 @@
 ⚠️ The current version has only been tested on build v2022.3.29s (build num: 1864)
 
 ⚠️ This editor currently only supports game host option editing
+
+⚠️ Made for Among Us Steam version on Windows 10
