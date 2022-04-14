@@ -5,4 +5,5 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 ⚠️ The current version has only been tested on build v2022.3.29s (build num: 1864)
+
 ⚠️ This editor currently only supports game host option editing
