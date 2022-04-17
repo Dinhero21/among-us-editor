@@ -1,4 +1,4 @@
-<img width="75px" height="75px" align="right" alt="Logo" src="https://i.ibb.co/mG8Ynxz/1.png" title="Among Us Editor"/>
+<img width="75px" height="75px" align="right" alt="Logo" src="https://i.ibb.co/YZGSqnt/Dinutil-Logo.png" title="Among Us Editor"/>
 
 # Among Us Editor
 
