@@ -92,8 +92,6 @@ async function cli () {
     }
 
     async function editGameHostOptions () {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
       const { option } = await inquirer.prompt({
         type: 'list',
         name: 'option',
