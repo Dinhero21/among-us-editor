@@ -191,30 +191,34 @@ async function cli () {
 
     switch (file) {
       case 'gho':
-        const { name } = await inquirer.prompt({
-          type: 'input',
-          name: 'name',
-          message: 'Save name:'
-        })
-
-        const savePath = path.join('./saves/gho', name)
-
-        if (fs.existsSync(savePath)) {
-          const { overwrite } = await inquirer.prompt({
-            type: 'confirm',
-            name: 'overwrite',
-            message: `${name} already exists. Do you want to overwrite it?`
-          })
-
-          if (!overwrite) await save()
-
-          if (!save) return await save()
-        }
-
-        fs.writeFileSync(savePath, gameHostOptionsBuffer)
+        await saveGameHostOptions()
         break
       default:
         break
+    }
+
+    async function saveGameHostOptions () {
+      const { name } = await inquirer.prompt({
+        type: 'input',
+        name: 'name',
+        message: 'Save name:'
+      })
+
+      const savePath = path.join('./saves/gho', name)
+
+      if (fs.existsSync(savePath)) {
+        const { overwrite } = await inquirer.prompt({
+          type: 'confirm',
+          name: 'overwrite',
+          message: `${name} already exists. Do you want to overwrite it?`
+        })
+
+        if (!overwrite) await save()
+
+        if (!save) return await save()
+      }
+
+      fs.writeFileSync(savePath, gameHostOptionsBuffer)
     }
   }
 
@@ -236,33 +240,37 @@ async function cli () {
 
     switch (file) {
       case 'gho':
-        const saves = fs.readdirSync('./saves/gho/')
-
-        if (saves.length === 0) return
-
-        const { name } = await inquirer.prompt({
-          type: 'list',
-          name: 'name',
-          message: 'Load file:',
-          choices: saves
-        })
-
-        const savePath = path.join('./saves/gho/', name)
-
-        const { saveCurrent } = await inquirer.prompt({
-          type: 'confirm',
-          name: 'saveCurrent',
-          message: 'Would you like to save the current game host options?'
-        })
-
-        if (saveCurrent) await save()
-
-        gameHostOptionsBuffer = fs.readFileSync(savePath)
-        gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
-        parsed = sus.gameHostOptions.format(gameHostOptions)
+        await loadGamehostOptions()
         break
       default:
         break
+    }
+
+    async function loadGamehostOptions () {
+      const saves = fs.readdirSync('./saves/gho/')
+
+      if (saves.length === 0) return
+
+      const { name } = await inquirer.prompt({
+        type: 'list',
+        name: 'name',
+        message: 'Load file:',
+        choices: saves
+      })
+
+      const savePath = path.join('./saves/gho/', name)
+
+      const { saveCurrent } = await inquirer.prompt({
+        type: 'confirm',
+        name: 'saveCurrent',
+        message: 'Would you like to save the current game host options?'
+      })
+
+      if (saveCurrent) await save()
+
+      gameHostOptionsBuffer = fs.readFileSync(savePath)
+      gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+      parsed = sus.gameHostOptions.format(gameHostOptions)
     }
   }
 
