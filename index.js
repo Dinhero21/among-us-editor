@@ -29,7 +29,7 @@ async function cli () {
       message: 'What would you like to do?',
       choices: [
         {
-          name: 'Edit game host options',
+          name: 'Edit',
           value: 'edit'
         },
         {
@@ -71,137 +71,201 @@ async function cli () {
 
     await title()
 
-    const { option } = await inquirer.prompt({
+    const { file } = await inquirer.prompt({
       type: 'list',
-      name: 'option',
-      message: 'What option would you like to edit?',
-      choices: Object.values(parsed).map((value, index) => {
-        return {
-          name: value,
-          value: Object.keys(gameHostOptions)[index]
+      name: 'file',
+      message: 'What file would you like to edit?',
+      choices: [
+        {
+          name: 'Game Host Options',
+          value: 'gho'
         }
-      })
+      ]
     })
 
-    console.clear()
-
-    await title()
-
-    let min
-    let max
-    let isFloat
-
-    switch (sus.gameHostOptions.table[option].type) {
-      case 'Int8':
-        min = 0
-        max = 255
-
-        isFloat = false
-        break
-      case 'UInt8':
-        min = -128
-        max = 127
-
-        isFloat = false
-        break
-      case 'Int32LE':
-        min = 2147483648
-        max = 2147483647
-
-        isFloat = false
-        break
-      case 'FloatLE':
-        min = -340282346638528859811704183484516925440
-        max = 340282346638528859811704183484516925440
-
-        isFloat = true
+    switch (file) {
+      case 'gho':
+        await editGameHostOptions()
         break
       default:
-        throw new Error(`Unknown type: ${sus.gameHostOptions.table[option].type}`)
+        break
     }
 
-    if (!isFloat) console.log('Please enter a natural number.')
+    async function editGameHostOptions () {
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-    console.log(`Min: ${min}.`)
-    console.log(`Max: ${max}.`)
+      const { option } = await inquirer.prompt({
+        type: 'list',
+        name: 'option',
+        message: 'What option would you like to edit?',
+        choices: Object.values(parsed).map((value, index) => {
+          return {
+            name: value,
+            value: Object.keys(gameHostOptions)[index]
+          }
+        })
+      })
 
-    const { value } = await inquirer.prompt({
-      type: 'number',
-      name: 'value',
-      message: 'Set to: ',
-      validate: value => {
-        if (isNaN(value)) return 'Please enter a number.'
-        if (value < min) return `Value too small! Please enter a value bigger or equal to ${min}.`
-        if (value > max) return `Value too big! Please enter a value smaller or equal to ${max}.`
-        if (value % 1 !== 0) return `Please enter a natural number like ${Math.floor(value)}.`
+      console.clear()
 
-        return true
+      await title()
+
+      let min
+      let max
+      let isFloat
+
+      switch (sus.gameHostOptions.table[option].type) {
+        case 'Int8':
+          min = 0
+          max = 255
+
+          isFloat = false
+          break
+        case 'UInt8':
+          min = -128
+          max = 127
+
+          isFloat = false
+          break
+        case 'Int32LE':
+          min = 2147483648
+          max = 2147483647
+
+          isFloat = false
+          break
+        case 'FloatLE':
+          min = -340282346638528859811704183484516925440
+          max = 340282346638528859811704183484516925440
+
+          isFloat = true
+          break
+        default:
+          throw new Error(`Unknown type: ${sus.gameHostOptions.table[option].type}`)
       }
-    })
 
-    gameHostOptions.RECOMMENDED_SETTINGS = 0
+      if (!isFloat) console.log('Please enter a natural number.')
 
-    gameHostOptions[option] = value
-    gameHostOptionsBuffer = sus.gameHostOptions.encode(gameHostOptions)
+      console.log(`Min: ${min}.`)
+      console.log(`Max: ${max}.`)
 
-    sus.gameHostOptions.writeBuffer(gameHostOptionsPath, gameHostOptionsBuffer)
+      const { value } = await inquirer.prompt({
+        type: 'number',
+        name: 'value',
+        message: 'Set to: ',
+        validate: value => {
+          if (isNaN(value)) return 'Please enter a number.'
+          if (value < min) return `Value too small! Please enter a value bigger or equal to ${min}.`
+          if (value > max) return `Value too big! Please enter a value smaller or equal to ${max}.`
+          if (value % 1 !== 0) return `Please enter a natural number like ${Math.floor(value)}.`
 
-    gameHostOptionsBuffer = sus.gameHostOptions.getBuffer(gameHostOptionsPath)
-    gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
-    parsed = sus.gameHostOptions.format(gameHostOptions)
+          return true
+        }
+      })
+
+      gameHostOptions.RECOMMENDED_SETTINGS = 0
+
+      gameHostOptions[option] = value
+      gameHostOptionsBuffer = sus.gameHostOptions.encode(gameHostOptions)
+
+      sus.gameHostOptions.writeBuffer(gameHostOptionsPath, gameHostOptionsBuffer)
+
+      gameHostOptionsBuffer = sus.gameHostOptions.getBuffer(gameHostOptionsPath)
+      gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+      parsed = sus.gameHostOptions.format(gameHostOptions)
+    }
   }
 
   async function save () {
-    const { name } = await inquirer.prompt({
-      type: 'input',
-      name: 'name',
-      message: 'Save name:'
+    if (!fs.existsSync('./saves/')) fs.mkdirSync('./saves')
+    if (!fs.existsSync('./saves/gho/')) fs.mkdirSync('./saves/gho')
+
+    const { file } = await inquirer.prompt({
+      type: 'list',
+      name: 'file',
+      message: 'What value would you like to save?',
+      choices: [
+        {
+          name: 'Game Host Options',
+          value: 'gho'
+        }
+      ]
     })
 
-    const savePath = path.join('./saves', name)
+    switch (file) {
+      case 'gho':
+        const { name } = await inquirer.prompt({
+          type: 'input',
+          name: 'name',
+          message: 'Save name:'
+        })
 
-    if (fs.existsSync(savePath)) {
-      const { overwrite } = await inquirer.prompt({
-        type: 'confirm',
-        name: 'overwrite',
-        message: `${name} already exists. Do you want to overwrite it?`
-      })
+        const savePath = path.join('./saves/gho', name)
 
-      if (!overwrite) await save()
+        if (fs.existsSync(savePath)) {
+          const { overwrite } = await inquirer.prompt({
+            type: 'confirm',
+            name: 'overwrite',
+            message: `${name} already exists. Do you want to overwrite it?`
+          })
 
-      if (!save) return await save()
+          if (!overwrite) await save()
+
+          if (!save) return await save()
+        }
+
+        fs.writeFileSync(savePath, gameHostOptionsBuffer)
+        break
+      default:
+        break
     }
-
-    fs.writeFileSync(savePath, gameHostOptionsBuffer)
   }
 
   async function load () {
-    if (!fs.existsSync('./saves')) fs.mkdirSync('./saves')
+    if (!fs.existsSync('./saves/')) fs.mkdirSync('./saves')
+    if (!fs.existsSync('./saves/gho/')) fs.mkdirSync('./saves/gho')
 
-    const saves = fs.readdirSync('./saves')
-
-    if (saves.length === 0) return
-
-    const { name } = await inquirer.prompt({
+    const { file } = await inquirer.prompt({
       type: 'list',
-      name: 'name',
-      message: 'Load file:',
-      choices: saves
+      name: 'file',
+      message: 'What file would you like to load?',
+      choices: [
+        {
+          name: 'Game Host Options',
+          value: 'gho'
+        }
+      ]
     })
 
-    const savePath = path.join('./saves', name)
+    switch (file) {
+      case 'gho':
+        const saves = fs.readdirSync('./saves/gho/')
 
-    const { saveCurrent } = await inquirer.prompt({
-      type: 'confirm',
-      name: 'saveCurrent',
-      message: 'Would you like to save the current game host options?'
-    })
+        if (saves.length === 0) return
 
-    if (saveCurrent) await save()
+        const { name } = await inquirer.prompt({
+          type: 'list',
+          name: 'name',
+          message: 'Load file:',
+          choices: saves
+        })
 
-    gameHostOptionsBuffer = fs.readFileSync(savePath)
-    gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
-    parsed = sus.gameHostOptions.format(gameHostOptions)
+        const savePath = path.join('./saves/gho/', name)
+
+        const { saveCurrent } = await inquirer.prompt({
+          type: 'confirm',
+          name: 'saveCurrent',
+          message: 'Would you like to save the current game host options?'
+        })
+
+        if (saveCurrent) await save()
+
+        gameHostOptionsBuffer = fs.readFileSync(savePath)
+        gameHostOptions = sus.gameHostOptions.parse(gameHostOptionsBuffer)
+        parsed = sus.gameHostOptions.format(gameHostOptions)
+        break
+      default:
+        break
+    }
   }
 
   async function title () {
