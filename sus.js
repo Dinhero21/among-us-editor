@@ -160,7 +160,7 @@ const gameHostOptions = {
     },
     VOTING_TIME: {
       type: 'Int32LE',
-      address: 0x2A,
+      address: 0x24,
       name: 'Voting Time',
       parse: value => seconds(value < 0 ? '∞' : value)
     },
