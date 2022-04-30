@@ -178,7 +178,7 @@ const gameHostOptions = {
     },
     IMPOSTOR_VISION: {
       type: 'FloatLE',
-      address: 0x0B,
+      address: 0x0F,
       name: 'Impostor Vision',
       parse: multiplier
     },
